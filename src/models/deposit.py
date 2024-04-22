@@ -1,10 +1,8 @@
-from pydantic import BaseModel, validator, Field
+from pydantic import validator, Field
 from datetime import datetime
-from pydantic import BaseModel, create_model
-from typing import Dict, List
+from pydantic import BaseModel
+from typing import Dict
 
-
-DATE_FORMAT = "%d.%m.%Y"
 
 class DepositInput(BaseModel):
     date: str = Field(..., example="31.01.2021")
@@ -14,8 +12,9 @@ class DepositInput(BaseModel):
 
     @validator('date')
     def validate_date(cls, value: str):
+        date_format = "%d.%m.%Y"
         try:
-            datetime.strptime(value, "%d.%m.%Y")
+            datetime.strptime(value, date_format)
             return value
         except ValueError:
             raise ValueError("Incorrect date format, should be dd.mm.YYYY")
@@ -24,10 +23,9 @@ class DepositInput(BaseModel):
         return datetime.strptime(self.date, "%d.%m.%Y")
 
 
-
 class DepositOutput(BaseModel):
-    calculation: Dict[str, float]
+    __root__: Dict[str, float]
 
     @classmethod
     def from_calculation(cls, calculation: Dict[str, float]) -> 'DepositOutput':
-        return cls(calculation=calculation)
+        return cls(__root__=calculation)

@@ -1,6 +1,8 @@
-from fastapi import FastAPI
-from src.api.v1.deposit_routes import router as deposit_router
+from src.api.v1 import deposit_routes
 import uvicorn
+from fastapi import FastAPI
+from core.utils import validation_exception_handler
+from fastapi.exceptions import RequestValidationError
 
 app = FastAPI(
     title="Read-only API для онлайн-кинотеатра",
@@ -10,8 +12,9 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
 )
 
-app.include_router(deposit_router)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
 
+app.include_router(deposit_routes.router, prefix="/api/v1", tags=['calculate'])
 
 
 if __name__ == "__main__":
@@ -21,4 +24,3 @@ if __name__ == "__main__":
         port=8000,
         reload=True
     )
-
