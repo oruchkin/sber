@@ -23,9 +23,7 @@ class DepositInput(BaseModel):
     def get_date_as_datetime(self) -> datetime:
         return datetime.strptime(self.date, "%d.%m.%Y")
 
-    def create_deposit_output_model(periods: int) -> BaseModel:
-        fields = {f"month_{i + 1}": (float, ...) for i in range(periods)}
-        return create_model('DepositOutput', **fields)
+
 
 class DepositOutput(BaseModel):
     calculation: Dict[str, float]
