@@ -1,7 +1,7 @@
-from pydantic import validator, Field
 from datetime import datetime
-from pydantic import BaseModel
 from typing import Dict
+
+from pydantic import BaseModel, Field, validator
 
 
 class DepositInput(BaseModel):
@@ -18,6 +18,24 @@ class DepositInput(BaseModel):
             return value
         except ValueError:
             raise ValueError("Incorrect date format, should be dd.mm.YYYY")
+
+    @validator('periods')
+    def validate_periods(cls, value: int):
+        if not (1 <= value <= 60):
+            raise ValueError("Periods must be between 1 and 60.")
+        return value
+
+    @validator('amount')
+    def validate_amount(cls, value: float):
+        if not (10000 <= value <= 3000000):
+            raise ValueError("Amount must be between 10,000 and 3,000,000.")
+        return value
+
+    @validator('rate')
+    def validate_rate(cls, value: float):
+        if not (1 <= value <= 8):
+            raise ValueError("Rate must be between 1% and 8%.")
+        return value
 
     def get_date_as_datetime(self) -> datetime:
         return datetime.strptime(self.date, "%d.%m.%Y")

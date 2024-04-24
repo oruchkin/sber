@@ -1,26 +1,28 @@
-from src.api.v1 import deposit_routes
+import logging
+
 import uvicorn
 from fastapi import FastAPI
-from core.utils import validation_exception_handler
-from fastapi.exceptions import RequestValidationError
+
+from src.api.v1 import deposit_routes
+from src.core.logger import LOGGING
 
 app = FastAPI(
-    title="Read-only API для онлайн-кинотеатра",
-    description="Информация о фильмах, жанрах и людях, участвовавших в создании произведения",
+    title="Read-only API для расчета депозитов",
+    description="Расчитываем депозиты клиентов",
     version="1.0.0",
     docs_url="/api/openapi",
     openapi_url="/api/openapi.json",
+    log_config=LOGGING,
+    log_level=logging.DEBUG
 )
 
-app.add_exception_handler(RequestValidationError, validation_exception_handler)
-
 app.include_router(deposit_routes.router, prefix="/api/v1", tags=['calculate'])
-
 
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
         port=8000,
-        reload=True
+        log_config=LOGGING,
+        log_level=logging.DEBUG,
     )
