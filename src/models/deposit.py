@@ -1,10 +1,8 @@
-from pydantic import BaseModel, validator, Field
 from datetime import datetime
-from pydantic import BaseModel, create_model
-from typing import Dict, List
+from typing import Dict
 
+from pydantic import BaseModel, Field, validator
 
-DATE_FORMAT = "%d.%m.%Y"
 
 class DepositInput(BaseModel):
     date: str = Field(..., example="31.01.2021")
@@ -14,22 +12,38 @@ class DepositInput(BaseModel):
 
     @validator('date')
     def validate_date(cls, value: str):
+        date_format = "%d.%m.%Y"
         try:
-            datetime.strptime(value, "%d.%m.%Y")
+            datetime.strptime(value, date_format)
             return value
         except ValueError:
             raise ValueError("Incorrect date format, should be dd.mm.YYYY")
 
+    @validator('periods')
+    def validate_periods(cls, value: int):
+        if not (1 <= value <= 60):
+            raise ValueError("Periods must be between 1 and 60.")
+        return value
+
+    @validator('amount')
+    def validate_amount(cls, value: float):
+        if not (10000 <= value <= 3000000):
+            raise ValueError("Amount must be between 10,000 and 3,000,000.")
+        return value
+
+    @validator('rate')
+    def validate_rate(cls, value: float):
+        if not (1 <= value <= 8):
+            raise ValueError("Rate must be between 1% and 8%.")
+        return value
+
     def get_date_as_datetime(self) -> datetime:
         return datetime.strptime(self.date, "%d.%m.%Y")
 
-    def create_deposit_output_model(periods: int) -> BaseModel:
-        fields = {f"month_{i + 1}": (float, ...) for i in range(periods)}
-        return create_model('DepositOutput', **fields)
 
 class DepositOutput(BaseModel):
-    calculation: Dict[str, float]
+    __root__: Dict[str, float]
 
     @classmethod
     def from_calculation(cls, calculation: Dict[str, float]) -> 'DepositOutput':
-        return cls(calculation=calculation)
+        return cls(__root__=calculation)
